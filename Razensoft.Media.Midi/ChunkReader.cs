@@ -25,11 +25,20 @@ namespace Razensoft.Media.Midi
             var header = reader.ReadBytesChecked(Chunk.HeaderLength);
             var length = reader.ReadInt32BigEndian();
             var data = reader.ReadBytesChecked(length);
-            return new Chunk
+            var chunk = CreateChunk(header);
+            chunk.Header = header;
+            chunk.Data = data;
+            return chunk;
+        }
+
+        private static Chunk CreateChunk(byte[] header)
+        {
+            switch (Chunk.Encoding.GetString(header))
             {
-                Header = header,
-                Data = data
-            };
+                case HeaderChunk.HeaderType: return new HeaderChunk();
+                case TrackChunk.HeaderType: return new TrackChunk();
+                default: return new Chunk();
+            }
         }
     }
 }

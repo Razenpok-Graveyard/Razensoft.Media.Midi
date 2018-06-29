@@ -29,6 +29,33 @@ namespace Razensoft.Media.Midi.Tests
         }
 
         [Test]
+        public void Read_KnownHeaderTypes_ReadAsConcreteTypes()
+        {
+            var headerChunk = new byte[]
+            {
+                0x4D, 0x54, 0x68, 0x64,
+                0x00, 0x00, 0x00, 0x00,
+            };
+            ShouldReadAsConcreteType<HeaderChunk>(headerChunk);
+
+            var trackChunk = new byte[]
+            {
+                0x4D, 0x54, 0x72, 0x6B,
+                0x00, 0x00, 0x00, 0x00,
+            };
+            ShouldReadAsConcreteType<TrackChunk>(trackChunk);
+        }
+
+        private static void ShouldReadAsConcreteType<T>(byte[] bytes) where T: Chunk
+        {
+            using (var reader = GetChunkReader(bytes))
+            {
+                var chunk = reader.Read();
+                chunk.GetType().ShouldBe(typeof(T));
+            }
+        }
+
+        [Test]
         public void Read_UnfinishedChunk_ExceptionThrown()
         {
             var emptyChunk = new byte[0];
