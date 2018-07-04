@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using NUnit.Framework;
 using Shouldly;
@@ -25,74 +25,50 @@ namespace Razensoft.Media.Midi.Tests
 
             chunk.Header.ShouldBe(new byte[] { 0x4D, 0x54, 0x68, 0x64 });
             chunk.AsciiHeader.ShouldBe("MThd");
-            chunk.Data.ShouldBe(new List<byte> { 0xFF, 0x10, 0x00 });
+            chunk.Data.ShouldBe(new byte[] { 0xFF, 0x10, 0x00 });
         }
 
         [Test]
-        public void Read_KnownHeaderTypes_ReadAsConcreteTypes()
+        [TestCase(new byte[] { 0x4D, 0x54, 0x68, 0x64 }, typeof(HeaderChunk), TestName = "Header Chunk (MThd)")]
+        [TestCase(new byte[] { 0x4D, 0x54, 0x72, 0x6B }, typeof(TrackChunk), TestName = "Track Chunk (MTrk)")]
+        [TestCase(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF }, typeof(Chunk), TestName = "Unknown Chunk (????)")]
+        public void Read_KnownHeaderTypes_ReadAsConcreteTypes(byte[] headerBytes, Type expectedType)
         {
-            var headerChunk = new byte[]
-            {
-                0x4D, 0x54, 0x68, 0x64,
-                0x00, 0x00, 0x00, 0x00,
-            };
-            ShouldReadAsConcreteType<HeaderChunk>(headerChunk);
-
-            var trackChunk = new byte[]
-            {
-                0x4D, 0x54, 0x72, 0x6B,
-                0x00, 0x00, 0x00, 0x00,
-            };
-            ShouldReadAsConcreteType<TrackChunk>(trackChunk);
-        }
-
-        private static void ShouldReadAsConcreteType<T>(byte[] bytes) where T: Chunk
-        {
-            using (var reader = GetChunkReader(bytes))
+            var chunkBytes = new byte[8];
+            Array.Copy(headerBytes, chunkBytes, 4);
+            using (var reader = GetChunkReader(chunkBytes))
             {
                 var chunk = reader.Read();
-                chunk.GetType().ShouldBe(typeof(T));
+                chunk.GetType().ShouldBe(expectedType);
             }
         }
 
         [Test]
-        public void Read_UnfinishedChunk_ExceptionThrown()
+        [TestCase(new byte[0], TestName = "Empty chunk")]
+        [TestCase(new byte[]
         {
-            var emptyChunk = new byte[0];
-            ShouldThrowExceptionWhenReading(emptyChunk);
-
-            var chunkWithTruncatedHeader = new byte[]
-            {
-                0x10
-            };
-            ShouldThrowExceptionWhenReading(chunkWithTruncatedHeader);
-
-            var chunkWithTruncatedLength = new byte[]
-            {
-                0x10, 0x01, 0xAA, 0xFF,
-                0x00, 0x00
-            };
-            ShouldThrowExceptionWhenReading(chunkWithTruncatedLength);
-
-            var chunkWithoutDataButWithDeclaredLength = new byte[]
-            {
-                0x10, 0x01, 0xAA, 0xFF,
-                0x00, 0x00, 0x00, 0x03
-            };
-            ShouldThrowExceptionWhenReading(chunkWithoutDataButWithDeclaredLength);
-
-            var chunkWithTruncatedData = new byte[]
-            {
-                0x10, 0x01, 0xAA, 0xFF,
-                0x00, 0x00, 0x00, 0x03,
-                0xFF, 0x10
-            };
-            ShouldThrowExceptionWhenReading(chunkWithTruncatedData);
-        }
-
-        private static void ShouldThrowExceptionWhenReading(byte[] bytes)
+            0x10
+        }, TestName = "Chunk with truncated header")]
+        [TestCase(new byte[]
         {
-            using (var reader = GetChunkReader(bytes)) {
+            0x10, 0x01, 0xAA, 0xFF,
+            0x00, 0x00
+        }, TestName = "Chunk with truncated length")]
+        [TestCase(new byte[]
+        {
+            0x10, 0x01, 0xAA, 0xFF,
+            0x00, 0x00, 0x00, 0x03
+        }, TestName = "Chunk without data but with declared length")]
+        [TestCase(new byte[]
+        {
+            0x10, 0x01, 0xAA, 0xFF,
+            0x00, 0x00, 0x00, 0x03,
+            0xFF, 0x10
+        }, TestName = "Chunk with truncated data")]
+        public void Read_UnfinishedChunk_ExceptionThrown(byte[] chunkBytes)
+        {
+            using (var reader = GetChunkReader(chunkBytes))
+            {
                 Should.Throw<EndOfStreamException>(() => reader.Read());
             }
         }

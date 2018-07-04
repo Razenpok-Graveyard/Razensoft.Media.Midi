@@ -8,27 +8,21 @@ namespace Razensoft.Media.Midi.Tests
     public class ChunkTests
     {
         [Test]
-        public void Header_LengthNotFour_FailToAssign()
+        [TestCase(new byte[] { 0x00, 0xFF }, TestName = "Header length < 4")]
+        [TestCase(new byte[] { 0x00, 0x01, 0x10, 0xAA, 0x1F, 0xFF }, TestName = "Header length > 4")]
+        public void Header_LengthNotFour_FailToAssign(byte[] header)
         {
             var chunk = new Chunk();
-
-            var tooShortHeader = new byte[] { 0x00, 0xFF };
-            Should.Throw<ArgumentException>(() => chunk.Header = tooShortHeader);
-
-            var tooLongHeader = new byte[] { 0x00, 0x01, 0x10, 0xAA, 0x1F, 0xFF };
-            Should.Throw<ArgumentException>(() => chunk.Header = tooLongHeader);
+            Should.Throw<ArgumentException>(() => chunk.Header = header);
         }
 
         [Test]
-        public void AsciiHeader_LengthNotFour_FailToAssign()
+        [TestCase("MT", TestName = "Header length < 4")]
+        [TestCase("MThdMT", TestName = "Header length > 4")]
+        public void AsciiHeader_LengthNotFour_FailToAssign(string asciiHeader)
         {
             var chunk = new Chunk();
-
-            const string tooShortHeader = "MT";
-            Should.Throw<ArgumentException>(() => chunk.AsciiHeader = tooShortHeader);
-
-            const string tooLongHeader = "MThdMT";
-            Should.Throw<ArgumentException>(() => chunk.AsciiHeader = tooLongHeader);
+            Should.Throw<ArgumentException>(() => chunk.AsciiHeader = asciiHeader);
         }
     }
 }
