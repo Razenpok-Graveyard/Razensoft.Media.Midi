@@ -10,14 +10,14 @@ namespace Razensoft.Media.Midi.Tests
         [Test]
         public void Write_NormalChunk_SuccessfulWrite()
         {
-            var stream = new MemoryStream();
+            var targetStream = new MemoryStream();
             var chunk = new Chunk
             {
                 AsciiHeader = "MTrk",
                 Data = new byte[] { 0xFF, 0x10, 0x00 }
             };
 
-            using (var writer = new ChunkWriter(stream)) {
+            using (var writer = new ChunkWriter(targetStream)) {
                 writer.Write(chunk);
             }
 
@@ -27,7 +27,7 @@ namespace Razensoft.Media.Midi.Tests
                 0x00, 0x00, 0x00, 0x03,
                 0xFF, 0x10, 0x00
             };
-            stream.ToArray().ShouldBe(expectedBytes);
+            targetStream.ToArray().ShouldBe(expectedBytes);
         }
     }
 }
