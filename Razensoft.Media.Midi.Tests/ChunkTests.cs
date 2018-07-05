@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using NUnit.Framework;
 using Shouldly;
 
@@ -23,6 +24,21 @@ namespace Razensoft.Media.Midi.Tests
         {
             var chunk = new Chunk();
             Should.Throw<ArgumentOutOfRangeException>(() => chunk.AsciiHeader = asciiHeader);
+        }
+    }
+
+    [TestFixture]
+    public class MidiFileTests
+    {
+        [Test]
+        public void Read_NormalFile_SuccessfulRead()
+        {
+            var sourceStream = new MemoryStream();
+            // TODO: add arranging
+            using (var midiFile = new MidiFile(sourceStream, MidiFileMode.Read))
+            {
+
+            }
         }
     }
 }
