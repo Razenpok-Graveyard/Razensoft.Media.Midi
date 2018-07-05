@@ -10,7 +10,8 @@ namespace Razensoft.Media.Midi
         {
             var bytes = reader.ReadBytes(length);
             if (bytes.Length < length)
-                Throw.EndOfStreamException();
+                throw new EndOfStreamException("Unable to read beyond the end of the stream.");
+
             return bytes;
         }
     }

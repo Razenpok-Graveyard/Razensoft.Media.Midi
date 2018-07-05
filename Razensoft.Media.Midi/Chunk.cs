@@ -18,10 +18,10 @@ namespace Razensoft.Media.Midi
             get => header;
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(value));
+                if (value == null) throw new ArgumentNullException(nameof(value));
                 if (value.Length != HeaderLength)
-                    Throw.InvalidHeaderLengthException();
+                    throw new ArgumentOutOfRangeException(nameof(value),
+                        "Header should have the Length of exactly four.");
                 header = value;
             }
         }
@@ -32,8 +32,7 @@ namespace Razensoft.Media.Midi
             get => Encoding.GetString(Header);
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(value));
+                if (value == null) throw new ArgumentNullException(nameof(value));
                 Header = Encoding.GetBytes(value);
             }
         }

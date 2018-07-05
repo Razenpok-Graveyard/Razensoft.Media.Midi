@@ -13,7 +13,7 @@ namespace Razensoft.Media.Midi.Tests
         public void Header_LengthNotFour_FailToAssign(byte[] header)
         {
             var chunk = new Chunk();
-            Should.Throw<ArgumentException>(() => chunk.Header = header);
+            Should.Throw<ArgumentOutOfRangeException>(() => chunk.Header = header);
         }
 
         [Test]
@@ -22,7 +22,7 @@ namespace Razensoft.Media.Midi.Tests
         public void AsciiHeader_LengthNotFour_FailToAssign(string asciiHeader)
         {
             var chunk = new Chunk();
-            Should.Throw<ArgumentException>(() => chunk.AsciiHeader = asciiHeader);
+            Should.Throw<ArgumentOutOfRangeException>(() => chunk.AsciiHeader = asciiHeader);
         }
     }
 }
